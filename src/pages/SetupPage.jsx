@@ -4,6 +4,7 @@ import { auth, db, storage } from '../firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { Camera, User } from 'lucide-react';
+import useToast from '../hooks/useToast';
 
 const INTERESTS = [
   { id: 'running', label: '🏃 Running' },
@@ -26,6 +27,7 @@ const STEP_GOALS = [5000, 8000, 10000];
 
 export default function SetupPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
@@ -88,6 +90,7 @@ export default function SetupPage() {
             }
           );
         });
+        showToast("Photo uploaded! ✓", "success");
       }
 
       // 2. Save Data to Firestore
@@ -103,11 +106,13 @@ export default function SetupPage() {
       });
 
       // 3. Navigate
+      showToast("Profile saved! 🎉", "success");
       navigate('/dashboard');
 
     } catch (err) {
       console.error(err);
       setError('Failed to save profile. Please try again.');
+      showToast("Something went wrong. Please try again.", "error");
     } finally {
       setSaving(false);
     }
@@ -132,27 +137,27 @@ export default function SetupPage() {
           <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">1. Profile Photo</h2>
           <div className="flex flex-col items-center space-y-4">
             <label className="relative cursor-pointer group">
-              <div className="w-32 h-32 rounded-full border-4 border-dashed border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50 group-hover:bg-gray-100 transition-colors">
+              <div className="w-40 h-40 rounded-full border-4 border-dashed border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50 group-hover:bg-gray-100 transition-colors shadow-inner">
                 {photoPreview ? (
                   <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
-                  <User className="w-12 h-12 text-gray-400" />
+                  <User className="w-16 h-16 text-gray-400" />
                 )}
                 
                 {/* Overlay on hover */}
                 <div className="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Camera className="w-8 h-8 text-white" />
+                  <Camera className="w-10 h-10 text-white animate-bounce" />
                 </div>
               </div>
-              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+              <input type="file" id="photo-upload" accept="image/*" className="hidden" onChange={handlePhotoChange} />
             </label>
             
             {uploadProgress > 0 && uploadProgress < 100 && (
               <div className="w-full max-w-xs bg-gray-200 rounded-full h-2.5">
-                <div className="bg-green-600 h-2.5 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
+                <div className="bg-[#22c55e] h-2.5 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
               </div>
             )}
-            <p className="text-sm text-gray-500">Tap to upload a profile picture</p>
+            <p className="text-sm font-bold text-gray-500 bg-gray-100 px-4 py-2 rounded-full">Tap photo to upload</p>
           </div>
         </section>
 
@@ -189,9 +194,9 @@ export default function SetupPage() {
                     key={interest.id}
                     type="button"
                     onClick={() => toggleInterest(interest.id)}
-                    className={`px-4 py-2.5 rounded-xl font-medium transition-all duration-200 ${
+                    className={`px-4 py-3 min-h-[44px] rounded-xl font-bold transition-all duration-200 ${
                       isSelected 
-                        ? 'bg-green-500 text-white shadow-md transform scale-105' 
+                        ? 'bg-[#22c55e] text-white shadow-md transform scale-105' 
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
@@ -248,10 +253,10 @@ export default function SetupPage() {
                     key={goal}
                     type="button"
                     onClick={() => setStepGoal(goal)}
-                    className={`flex-1 py-3 rounded-xl font-bold transition-all duration-200 ${
+                    className={`flex-1 py-4 min-h-[44px] rounded-2xl font-black transition-all duration-200 ${
                       isSelected 
-                        ? 'bg-[#22c55e] text-white shadow-md' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-[#22c55e] text-white shadow-lg' 
+                        : 'bg-gray-100 text-gray-600 hover:border-green-200 border border-transparent'
                     }`}
                   >
                     {goal.toLocaleString()}

@@ -39,8 +39,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8 sm:p-10 space-y-8">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4 py-8">
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-sm p-6 sm:p-10 space-y-8 border border-gray-100">
         
         {/* Header */}
         <div className="text-center space-y-3">
@@ -84,7 +84,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none p-1"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none p-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (

@@ -4,8 +4,14 @@ import { auth, db } from '../firebase';
 import { collection, doc, getDoc, getDocs, setDoc, query, where, or, orderBy, limit, serverTimestamp } from 'firebase/firestore';
 import { Flame, Plus, Minus } from 'lucide-react';
 import WeeklyChart from '../components/WeeklyChart';
+import Skeleton from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
+import useToast from '../hooks/useToast';
+import { useNavigate } from 'react-router-dom';
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   
@@ -163,9 +169,12 @@ export default function DashboardPage() {
       } else if (todaySteps > 0 && inputSteps === 0) {
         setStreak(Math.max(0, streak - 1));
       }
+      
+      showToast("Steps logged! Keep it up 🔥", "success");
 
     } catch (error) {
       console.error('Error saving steps:', error);
+      showToast("Something went wrong. Please try again.", "error");
     } finally {
       setSaving(false);
     }
@@ -177,11 +186,31 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-4 space-y-6 max-w-lg mx-auto animate-pulse pt-8">
-        <div className="h-10 bg-gray-200 rounded-xl w-3/4"></div>
-        <div className="h-64 bg-gray-200 rounded-full w-64 mx-auto"></div>
-        <div className="h-32 bg-gray-200 rounded-3xl w-full"></div>
-        <div className="h-24 bg-gray-200 rounded-3xl w-full"></div>
+      <div className="p-4 space-y-6 max-w-lg mx-auto pb-24 px-4 pt-8">
+        <div className="space-y-2">
+          <Skeleton width="180px" height="32px" />
+          <Skeleton width="100px" height="18px" />
+        </div>
+        
+        <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col items-center">
+          <Skeleton width="200px" height="200px" circle={true} />
+          <Skeleton width="120px" height="20px" className="mt-4 rounded-full" />
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          <Skeleton height="70px" className="rounded-2xl" />
+          <Skeleton height="70px" className="rounded-2xl" />
+          <Skeleton height="70px" className="rounded-2xl" />
+        </div>
+
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
+          <Skeleton width="150px" height="20px" />
+          <div className="flex gap-4">
+            <Skeleton width="40px" height="40px" circle={true} />
+            <Skeleton width="40px" height="40px" circle={true} />
+            <Skeleton width="40px" height="40px" circle={true} />
+          </div>
+        </div>
       </div>
     );
   }
@@ -204,12 +233,12 @@ export default function DashboardPage() {
   return (
     <div className="p-4 space-y-6 max-w-lg mx-auto pb-6">
       {/* 1. GREETING HEADER */}
-      <header className="pt-4 pb-2">
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+      <header className="pt-4 pb-2 px-1">
+        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight truncate">
           {greeting}, {name}! 👋
         </h1>
         {profile?.activityLevel && (
-          <span className="inline-block mt-2 px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full capitalize border border-green-200">
+          <span className="inline-block mt-2 px-3 py-1 bg-green-100 text-green-800 text-[10px] font-bold rounded-full capitalize border border-green-200 uppercase tracking-widest">
             {profile.activityLevel}
           </span>
         )}
@@ -257,26 +286,26 @@ export default function DashboardPage() {
       {/* 3. STEP INPUT SECTION */}
       <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
         <h2 className="font-bold text-gray-800 text-center text-lg">Log your steps today</h2>
-        <div className="flex items-center justify-center space-x-4">
+        <div className="flex items-center justify-center space-x-6 py-2">
           <button 
             onClick={() => adjustSteps(-500)}
-            className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"
+            className="w-14 h-14 min-w-[56px] min-h-[56px] rounded-full bg-gray-100 flex items-center justify-center text-gray-600 active:bg-gray-200 transition-colors shadow-sm"
           >
-            <Minus className="w-6 h-6" />
+            <Minus className="w-8 h-8" />
           </button>
           
           <input
             type="number"
             value={inputSteps}
             onChange={(e) => setInputSteps(Number(e.target.value))}
-            className="w-32 text-center text-3xl font-bold bg-transparent focus:outline-none border-b-2 border-gray-200 focus:border-green-500 py-1"
+            className="w-24 text-center text-4xl font-black bg-transparent focus:outline-none border-b-4 border-gray-100 focus:border-[#22c55e] py-1"
           />
           
           <button 
             onClick={() => adjustSteps(500)}
-            className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"
+            className="w-14 h-14 min-w-[56px] min-h-[56px] rounded-full bg-gray-100 flex items-center justify-center text-gray-600 active:bg-gray-200 transition-colors shadow-sm"
           >
-            <Plus className="w-6 h-6" />
+            <Plus className="w-8 h-8" />
           </button>
         </div>
         
@@ -343,23 +372,30 @@ export default function DashboardPage() {
         
         {loadingFriends ? (
           <div className="flex gap-4 overflow-x-auto pb-2">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="flex flex-col items-center space-y-2 animate-pulse shrink-0">
-                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                <div className="w-10 h-3 bg-gray-200 rounded"></div>
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="flex flex-col items-center space-y-2 shrink-0">
+                <Skeleton width="40px" height="40px" circle={true} />
+                <Skeleton width="30px" height="8px" />
               </div>
             ))}
           </div>
         ) : friends.length === 0 ? (
-          <div className="text-center p-5 bg-gray-50 rounded-2xl border border-dashed border-gray-200 flex flex-col items-center">
-            <p className="text-sm text-gray-600 mb-3 font-medium">No connections yet. Go to Discover to find people!</p>
-            <Link to="/discover" className="px-4 py-2 bg-green-100 text-green-700 text-sm font-bold rounded-xl hover:bg-green-200 transition-colors">
-              Discover Friends
-            </Link>
-          </div>
+          <EmptyState 
+            emoji="🤝"
+            title="Find your fitness crew"
+            subtitle="Connect with people on Discover to build your network"
+            buttonText="Explore Discover"
+            onButtonClick={() => navigate('/discover')}
+          />
+        ) : friends.filter(f => f.isActiveToday).length === 0 ? (
+          <EmptyState 
+            emoji="👟"
+            title="None of your friends are active today"
+            subtitle="Be the first to log your steps and lead the way!"
+          />
         ) : (
           <div className="flex gap-4 overflow-x-auto pb-2 -mx-2 px-2 snap-x hide-scrollbar">
-            {friends.map(friend => (
+            {friends.filter(f => f.isActiveToday).map(friend => (
               <Link 
                 key={friend.uid} 
                 to={`/chat/${friend.uid}`}

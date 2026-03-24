@@ -5,6 +5,7 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { Camera, User, LogOut, Edit2, X, Save } from 'lucide-react';
+import useToast from '../hooks/useToast';
 
 const INTERESTS = [
   { id: 'running', label: '🏃 Running' },
@@ -27,6 +28,7 @@ const STEP_GOALS = [5000, 8000, 10000];
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -97,7 +99,7 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     if (!editData.name.trim() || editData.interests.length === 0 || !editData.activityLevel) {
-      alert("Please fill in all required fields.");
+      showToast("Please fill in all required fields.", "info");
       return;
     }
 
@@ -141,10 +143,11 @@ export default function ProfilePage() {
       setIsEditing(false);
       setPhotoFile(null);
       setUploadProgress(0);
+      showToast("Profile saved! 🎉", "success");
 
     } catch (err) {
       console.error("Error updating profile:", err);
-      alert("Failed to update profile.");
+      showToast("Something went wrong. Please try again.", "error");
     } finally {
       setSaving(false);
     }
@@ -292,22 +295,22 @@ export default function ProfilePage() {
       {/* 3. INTERESTS */}
       <div className="space-y-2">
         <label className="block text-sm font-semibold text-gray-700">Interests</label>
-        <div className="flex flex-wrap gap-2">
-          {INTERESTS.map((interest) => {
-            const isSelected = editData.interests.includes(interest.id);
-            return (
-              <button
-                key={interest.id}
-                onClick={() => toggleInterest(interest.id)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  isSelected ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {interest.label}
-              </button>
-            );
-          })}
-        </div>
+          <div className="flex flex-wrap gap-2">
+            {INTERESTS.map((interest) => {
+              const isSelected = editData.interests.includes(interest.id);
+              return (
+                <button
+                  key={interest.id}
+                  onClick={() => toggleInterest(interest.id)}
+                  className={`px-4 py-3 min-h-[44px] rounded-xl text-sm font-bold transition-all ${
+                    isSelected ? 'bg-[#22c55e] text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {interest.label}
+                </button>
+              );
+            })}
+          </div>
       </div>
 
       {/* 4. ACTIVITY LEVEL */}
@@ -342,8 +345,8 @@ export default function ProfilePage() {
               <button
                 key={goal}
                 onClick={() => setEditData({ ...editData, stepGoal: goal })}
-                className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${
-                  isSelected ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                className={`flex-1 py-4 min-h-[44px] rounded-xl text-base font-black transition-all ${
+                  isSelected ? 'bg-[#22c55e] text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 {goal.toLocaleString()}
